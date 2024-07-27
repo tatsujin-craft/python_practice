@@ -37,6 +37,12 @@ Date: 2024-07-27
 
 import random
 
+NUM_BARRELS = 1000
+MAX_CAPACITY = 100
+WHISKEY_TARGET_AMOUNT = 15000
+WINE_TARGET_AMOUNT = 16500
+BEER_TARGET_AMOUT = 17000
+
 
 class Barrel:
     def __init__(self, type_of_liquor, amount):
@@ -59,7 +65,7 @@ def generate_barrels(num_barrels=1000, max_capacity=100):
     barrels = []
     for _ in range(num_barrels):
         type_of_liquor = random.choice(types_of_liquor)
-        amount = random.randint(0, max_capacity)
+        amount = random.randint(0, max_capacity)  # Use random.randint for integer values
         barrels.append(Barrel(type_of_liquor, amount))
     return barrels
 
@@ -103,64 +109,89 @@ def find_best_subset(barrels, target, liquor_type):
     for i in range(n, 0, -1):
         if keep[i][j]:
             index, amount = filtered_barrels[i - 1]
-            best_subset.append(index)
+            best_subset.append((index, amount))
             j -= amount
 
     closest_amount = dp[n][target]
     return best_subset, closest_amount
 
 
+def format_subset(subset):
+    lines = []
+    line_length = 10
+    for i in range(0, len(subset), line_length):
+        line = ", ".join(
+            [f"{index:>4}: {amount:>3}L" for index, amount in subset[i : i + line_length]]
+        )
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def format_barrel_list(barrels):
+    lines = []
+    line_length = 5
+    for i in range(0, len(barrels), line_length):
+        line = ", ".join(
+            [
+                f"{i + j:>4}: {barrels[i + j].amount:>3}L ({barrels[i + j].type_of_liquor:>7})"
+                for j in range(line_length)
+                if i + j < len(barrels)
+            ]
+        )
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def main():
     # Generate the list of barrels
-    barrels = generate_barrels()
+    barrels = generate_barrels(NUM_BARRELS, MAX_CAPACITY)
+    print(f"\nAll Barrels:\n{format_barrel_list(barrels)}")
 
-    # Log the number of barrels of each type and their capacities
+    # Calculate the number and total amount of each type of liquor
     whiskey_count = sum(1 for barrel in barrels if barrel.type_of_liquor == "whiskey")
     wine_count = sum(1 for barrel in barrels if barrel.type_of_liquor == "wine")
     beer_count = sum(1 for barrel in barrels if barrel.type_of_liquor == "beer")
-
+    whiskey_amount = sum(barrel.amount for barrel in barrels if barrel.type_of_liquor == "whiskey")
+    wine_amount = sum(barrel.amount for barrel in barrels if barrel.type_of_liquor == "wine")
+    beer_amount = sum(barrel.amount for barrel in barrels if barrel.type_of_liquor == "beer")
     print(
-        f"Generated {whiskey_count} whiskey barrels, "
-        f"{wine_count} wine barrels, {beer_count} beer barrels."
+        f"\nGenerated each barrels"
+        f"\nWhiskey barrels: {whiskey_count}, amount: {whiskey_amount} L"
+        f"\nWine barrels: {wine_count}, amount: {wine_amount} L"
+        f"\nBeer barrels: {beer_count}, amount {beer_amount} L"
     )
-
-    for i, barrel in enumerate(barrels):
-        print(f"Barrel {i}: Type={barrel.type_of_liquor}, Amount={barrel.amount}L")
-
-    # Set target amounts
-    whiskey_target = 12007
-    wine_target = 15013
-    beer_target = 17011
 
     # Find the best subsets
-    best_whiskey_subset, whiskey_amount = find_best_subset(barrels, whiskey_target, "whiskey")
-    best_wine_subset, wine_amount = find_best_subset(barrels, wine_target, "wine")
-    best_beer_subset, beer_amount = find_best_subset(barrels, beer_target, "beer")
+    best_whiskey_subset, whiskey_amount = find_best_subset(
+        barrels, WHISKEY_TARGET_AMOUNT, "whiskey"
+    )
+    best_wine_subset, wine_amount = find_best_subset(barrels, WINE_TARGET_AMOUNT, "wine")
+    best_beer_subset, beer_amount = find_best_subset(barrels, BEER_TARGET_AMOUT, "beer")
 
-    # Display the indices of the best subsets and the closest amounts
+    # Display the indices and amounts of the best subsets and the closest amounts
     print(
-        f"\nBest subset of whiskey barrels close to target {whiskey_target} L"
-        f"\nBarrels ID list: {best_whiskey_subset}"
+        f"\nWhiskey barrels target amount {WHISKEY_TARGET_AMOUNT} L"
         f"\nNumber of whiskey barrels: {len(best_whiskey_subset)}"
         f"\nClosest amount: {whiskey_amount} L"
+        f"\nBest subset of barrels (ID and Amount list):\n{format_subset(best_whiskey_subset)}"
     )
     print(
-        f"\nBest subset of wine barrels close to target {wine_target} L"
-        f"\nBarrels ID list: {best_wine_subset}"
+        f"\nWine barrels target amount {WINE_TARGET_AMOUNT} L"
         f"\nNumber of wine barrels: {len(best_wine_subset)}"
         f"\nClosest amount: {wine_amount} L"
+        f"\nBest subset of barrels (ID and Amount list):\n{format_subset(best_wine_subset)}"
     )
     print(
-        f"\nBest subset of beer barrels close to target {beer_target} L"
-        f"\nBarrels ID list: {best_beer_subset}"
+        f"\nBeer barrels target amount {BEER_TARGET_AMOUT} L"
         f"\nNumber of beer barrels: {len(best_beer_subset)}"
         f"\nClosest amount: {beer_amount} L"
+        f"\nBest subset of barrels (ID and Amount list):\n{format_subset(best_beer_subset)}"
     )
 
     # Calculate the sum of the amounts in the best subsets
-    whiskey_sum = sum(barrels[i].amount for i in best_whiskey_subset)
-    wine_sum = sum(barrels[i].amount for i in best_wine_subset)
-    beer_sum = sum(barrels[i].amount for i in best_beer_subset)
+    whiskey_sum = sum(amount for _, amount in best_whiskey_subset)
+    wine_sum = sum(amount for _, amount in best_wine_subset)
+    beer_sum = sum(amount for _, amount in best_beer_subset)
 
     # Display the calculated sums
     print(f"\nCalculated sum of the best subset of whiskey barrels: {whiskey_sum} L")
