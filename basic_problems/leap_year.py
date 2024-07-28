@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script Name: check_leap_year.py
+Script Name: leap_year.py
 Description: 
     This script checks if a given year is a leap year based on the Gregorian calendar rules.
     Leap year definitions:
@@ -8,7 +8,7 @@ Description:
         - However, year divisible by 100 are not leap year.
         - However, year divisible by 400 are leap year.
 Usage:
-    $ python3 check_leap_year.py
+    $ python3 leap_year.py
 
 Input:
     Enter a year as an integer.
